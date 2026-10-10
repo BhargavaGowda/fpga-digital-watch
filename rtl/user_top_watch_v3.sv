@@ -81,8 +81,8 @@ module user_top_watch_v3 #(
       .tick(seconds_tick)
   );
 
-  assign minutes_tick = seconds_tick && seconds == 59;
-  assign hours_tick = minutes_tick && minutes == 59;
+  assign minutes_tick = seconds_tick && seconds == 59 && !(mode_enable == 3'b001);
+  assign hours_tick = minutes_tick && minutes == 59 && !(mode_enable == 3'b010);
 
   assign hours_disp = {2'b0, hours};
   assign minutes_disp = {1'b0, minutes};
