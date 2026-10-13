@@ -31,13 +31,20 @@ async def test_cascade_blocked_in_edit_mode(dut):
     # -----------------------------------------------------------------------
     cocotb.log.info("Section A: minutes must not tick when editing seconds=59")
 
-    await press_mode(dut, HOLD)  # long press -> enter edit, seconds selected
-    await tick_n(dut, 3)
+    cocotb.log.info(dut.mode_enable.value)
 
+    await press_mode(dut, SHORT)  # long press -> enter edit, seconds selected
+    await tick_n(dut, 3)
+    cocotb.log.info(dut.mode_enable.value)
+
+    await press_mode(dut, HOLD)
+    await tick_n(dut, 3)
+    cocotb.log.info(dut.mode_enable.value)
     # Navigate seconds to 59 by decrementing (0 wraps to 59 in one press)
     while int(dut.seconds_disp.value) != 59:
         await press_dec(dut, SHORT)
         await tick_n(dut, 3)
+        cocotb.log.info(dut.mode_enable.value)
 
     minutes_snap = int(dut.minutes_disp.value)
     await tick_n(dut, 2 * CPS + 5)  # let at least two 1 Hz ticks fire
@@ -49,7 +56,9 @@ async def test_cascade_blocked_in_edit_mode(dut):
     # -----------------------------------------------------------------------
     # Section B: seconds edit, seconds=59 and minutes=59 -> hours must not advance
     # -----------------------------------------------------------------------
-    cocotb.log.info("Section B: hours must not tick when editing seconds=59, minutes=59")
+    cocotb.log.info(
+        "Section B: hours must not tick when editing seconds=59, minutes=59"
+    )
 
     # Still in seconds edit - move to minutes edit and set minutes to 59
     await press_mode(dut, 2)  # seconds -> minutes edit
@@ -87,11 +96,13 @@ async def test_cascade_blocked_in_edit_mode(dut):
     # Section C: minutes edit, minutes=59 -> hours must not advance while
     #            seconds counts freely through 59
     # -----------------------------------------------------------------------
-    cocotb.log.info("Section C: hours must not tick when editing minutes=59 (seconds running)")
+    cocotb.log.info(
+        "Section C: hours must not tick when editing minutes=59 (seconds running)"
+    )
 
     # Enter minutes edit
     await press_mode(dut, HOLD)  # long press -> seconds selected
-    await press_mode(dut, 2)    # -> minutes selected
+    await press_mode(dut, 2)  # -> minutes selected
     await tick_n(dut, 3)
 
     # Navigate minutes to 59

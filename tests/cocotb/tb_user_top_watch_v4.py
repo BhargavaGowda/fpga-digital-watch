@@ -66,14 +66,15 @@ async def test_divider_reset_on_exit_seconds_edit(dut):
 
     # Enter seconds edit (long press).  mode_enable[0] goes high.
     await press_mode(dut, HOLD)
+    await press_mode(dut, HOLD)
+    cocotb.log.info(dut.mode_enable.value)
 
     # Advance CPS//2 cycles inside seconds edit.  The divider counts freely
     # but does not reach its terminal count (CPS//2 < CPS).
     await tick_n(dut, CPS // 2)
     seconds_before_exit = int(dut.seconds_disp.value)
     cocotb.log.info(
-        f"seconds_disp before exit: {seconds_before_exit}  "
-        f"(divider count ~ {CPS // 2})"
+        f"seconds_disp before exit: {seconds_before_exit}  (divider count ~ {CPS // 2})"
     )
 
     # Exit seconds edit -> minutes edit (short press).
@@ -89,6 +90,7 @@ async def test_divider_reset_on_exit_seconds_edit(dut):
     # With reset: divider at ~CPS//2, still short of terminal count.
     # Without reset: divider would be at ~CPS, tick would have already fired.
     await tick_n(dut, CPS // 2)
+
     assert int(dut.seconds_disp.value) == seconds_before_exit, (
         f"seconds_disp advanced too soon after exiting seconds edit "
         f"(expected {seconds_before_exit}, got {int(dut.seconds_disp.value)}): "
@@ -101,6 +103,7 @@ async def test_divider_reset_on_exit_seconds_edit(dut):
 
     # --- Assertion 2: tick fires within the next CPS cycles ---
     await tick_n(dut, CPS)
+    cocotb.log.info(dut.seconds.value)
     expected = (seconds_before_exit + 1) % 60
     assert int(dut.seconds_disp.value) == expected, (
         f"seconds_disp did not advance within CPS={CPS} cycles after exit "
@@ -120,7 +123,9 @@ async def test_divider_reset_on_exit_seconds_edit(dut):
     # from 0 and no tick would arrive within CPS//2 cycles.
     seconds_before_minutes_exit = int(dut.seconds_disp.value)
     await press_mode(dut, 2)
-    cocotb.log.info("Exited minutes edit (entered hours edit); no spurious reset expected")
+    cocotb.log.info(
+        "Exited minutes edit (entered hours edit); no spurious reset expected"
+    )
 
     await tick_n(dut, CPS // 2)
     expected_after_no_reset = (seconds_before_minutes_exit + 1) % 60

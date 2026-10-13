@@ -15,7 +15,6 @@ module pwm_generator #(
   logic enable = '1;
   localparam int CounterWidth = $clog2(PERIOD_CYCLES) + 1;
   logic [CounterWidth-1:0] count;
-  logic [CounterWidth-1:0] compare = CounterWidth'(PERIOD_CYCLES);
 
   mod_n_counter #(
       .WIDTH(CounterWidth),

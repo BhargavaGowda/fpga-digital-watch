@@ -162,16 +162,56 @@ module user_top_watch_v3 #(
 
   );
 
-  assign seconds_inc = inc;
-  assign seconds_dec = dec;
-  assign minutes_inc = inc;
-  assign minutes_dec = dec;
-  assign hours_inc = inc;
-  assign hours_dec = dec;
+  logic inc_held;
+  logic dec_held;
+  logic inc_repeat;
+  logic dec_repeat;
+
+  button_hold_detect #(
+      .HOLD_CYCLES(CYCLES_PER_SECOND / 2 + 1)
+  ) u_inc_hold_detect (
+      .clk(clk),
+      .button(button[1]),
+      .held(inc_held)
+  );
+
+  button_hold_detect #(
+      .HOLD_CYCLES(CYCLES_PER_SECOND / 2 + 1)
+  ) u_dec_hold_detect (
+      .clk(clk),
+      .button(button[0]),
+      .held(dec_held)
+  );
+
+  restartable_rate_generator #(
+      .CYCLE_COUNT(CYCLES_PER_SECOND / 10)
+  ) inc_pulse_train (
+      .clk (clk),
+      .run (inc_held),
+      .tick(inc_repeat)
+  );
+
+  restartable_rate_generator #(
+      .CYCLE_COUNT(CYCLES_PER_SECOND / 10)
+  ) dec_pulse_train (
+      .clk (clk),
+      .run (dec_held),
+      .tick(dec_repeat)
+  );
+
+
+  assign seconds_inc = inc | inc_repeat;
+  assign seconds_dec = dec | dec_repeat;
+  assign minutes_inc = inc | inc_repeat;
+  assign minutes_dec = dec | dec_repeat;
+  assign hours_inc = inc | inc_repeat;
+  assign hours_dec = dec | dec_repeat;
 
   assign seconds_edit = mode_enable == 3'b001;
   assign minutes_edit = mode_enable == 3'b010;
   assign hours_edit = mode_enable == 3'b100;
+
+
 
 
 endmodule
