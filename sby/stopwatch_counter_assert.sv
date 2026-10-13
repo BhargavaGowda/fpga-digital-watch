@@ -60,6 +60,8 @@ module stopwatch_counter_assert #(
 
   // Record duration between ticks
   integer unsigned duration = 0;
+  integer unsigned max = Max;
+  integer unsigned cps = CYCLES_PER_SECOND;
   always @(*) assert (duration <= Max + 1);
 
   // Sequential asserts
