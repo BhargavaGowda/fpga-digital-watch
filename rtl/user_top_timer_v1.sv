@@ -43,14 +43,31 @@ module user_top_timer_v1 #(
 
   always_ff @(posedge clk) begin
     if (dec) running <= ~running;
-    if ((seconds == '0 && minutes == '0 && hours == '0) || mode_enable != '0) running <= '0;
+    if ((seconds == '0 && minutes == '0 && hours == '0) || mode_enable != 3'b000) running <= '0;
   end
+
+  logic h_bo;
+  logic hours_out = 0;
+  logic m_bo;
+  logic minutes_out = 0;
+  logic s_bo;
+  logic seconds_out = 0;
 
   logic seconds_tick;
   logic seconds_edit;
   logic seconds_inc;
   logic seconds_dec;
   logic [5:0] seconds;
+
+  logic minutes_edit;
+  logic minutes_inc;
+  logic minutes_dec;
+  logic [5:0] minutes;
+
+  logic hours_edit;
+  logic hours_inc;
+  logic hours_dec;
+  logic [4:0] hours;
   editable_countdown #(
       .MAX  (59),
       .WIDTH(6)
@@ -61,48 +78,51 @@ module user_top_timer_v1 #(
       .inc(seconds_inc),
       .dec(seconds_dec),
       .count(seconds),
-      .clr(seconds == '0 && minutes == '0 && hours == '0),
-      .borrow_out(minutes_tick)
+      .clr(hours_out & minutes_out & seconds_out),
+      .borrow_out(s_bo)
   );
 
-  logic minutes_tick;
-  logic minutes_edit;
-  logic minutes_inc;
-  logic minutes_dec;
-  logic [5:0] minutes;
+
   editable_countdown #(
       .MAX  (59),
       .WIDTH(6)
   ) u_minutes (
       .clk(clk),
-      .tick(minutes_tick),
+      .tick(s_bo),
       .edit_mode(minutes_edit),
       .inc(minutes_inc),
       .dec(minutes_dec),
       .count(minutes),
-      .clr(minutes == '0 && hours == '0),
-      .borrow_out(hours_tick)
+      .clr(hours_out & minutes_out),
+      .borrow_out(m_bo)
   );
 
-  logic hours_tick;
-  logic hours_edit;
-  logic hours_inc;
-  logic hours_dec;
-  logic [4:0] hours;
+
   editable_countdown #(
       .MAX  (23),
       .WIDTH(5)
   ) u_hours (
       .clk(clk),
-      .tick(hours_tick),
+      .tick(m_bo),
       .edit_mode(hours_edit),
       .inc(hours_inc),
       .dec(hours_dec),
       .count(hours),
-      .clr(hours == '0),
-      .borrow_out(_ignore)
+      .clr(hours_out),
+      .borrow_out(h_bo)
   );
-  logic _ignore;
+
+
+
+  always_ff @(posedge clk) begin
+    if (h_bo) hours_out <= 1;
+    if (m_bo) minutes_out <= 1;
+    if (s_bo) seconds_out <= 1;
+
+    if (hours > '0) hours_out <= 0;
+    if (minutes > '0) minutes_out <= 0;
+    if (seconds > '0) seconds_out <= 0;
+  end
 
   // Accurate time keeping V4
 
@@ -130,9 +150,10 @@ module user_top_timer_v1 #(
       .HOLD_CYCLES(CYCLES_PER_SECOND)  // Fill in, based on CYCLES_PER_SECOND
   ) u_mode_selector (
       .clk(clk),
-      .button(button[3] & ~running),
+      .button(button[3]),
       .mode_enable(mode_enable)
   );
+
 
   logic pwm_out;
   pwm_generator #(

@@ -68,14 +68,16 @@ module user_top_brightness_wrapper #(
       .enable('1),
       .count(pwm_count)
   );
+  logic [1:0] pwm_bits;
+  assign pwm_bits = sw[9:8];
 
   logic pwm_out;
   always_comb begin
-    case (sw)
-      10'b0000000000: pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 8000));
-      10'b0100000000: pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 4000));
-      10'b1100000000: pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 2000));
-      10'b1000000000: pwm_out = '0;
+    case (pwm_bits)
+      2'b00:   pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 8000));
+      2'b01:   pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 4000));
+      2'b11:   pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 2000));
+      2'b10:   pwm_out = '0;
       default: pwm_out = '0;
 
     endcase
