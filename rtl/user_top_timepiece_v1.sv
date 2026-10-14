@@ -112,25 +112,25 @@ module user_top_timepiece_v1 #(
     case (mode_sel)
       // Stopwatch
       2'b01: begin
-        assign stopwatch_in = ui_top_in;
-        assign ui_top_out = stopwatch_out;
-        assign watch_in = ui_top_in_no_buttons;
-        assign timer_in = ui_top_in_no_buttons;
+        stopwatch_in = ui_top_in;
+        ui_top_out = stopwatch_out;
+        watch_in = ui_top_in_no_buttons;
+        timer_in = ui_top_in_no_buttons;
 
       end
       // Timer
       2'b11: begin
-        assign stopwatch_in = ui_top_in_no_buttons;
-        assign ui_top_out = timer_out;
-        assign watch_in = ui_top_in_no_buttons;
-        assign timer_in = ui_top_in;
+        stopwatch_in = ui_top_in_no_buttons;
+        ui_top_out = timer_out;
+        watch_in = ui_top_in_no_buttons;
+        timer_in = ui_top_in;
       end
       // Watch
       default: begin
-        assign stopwatch_in = ui_top_in_no_buttons;
-        assign ui_top_out = watch_out;
-        assign watch_in = ui_top_in;
-        assign timer_in = ui_top_in_no_buttons;
+        stopwatch_in = ui_top_in_no_buttons;
+        ui_top_out = watch_out;
+        watch_in = ui_top_in;
+        timer_in = ui_top_in_no_buttons;
       end
     endcase
 endmodule
