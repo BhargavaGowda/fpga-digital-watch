@@ -55,51 +55,34 @@ module user_top_brightness_wrapper #(
 
   );
 
-  logic pwm_50;
-  logic pwm_25;
-  logic pwm_125;
+  localparam int CounterWidth = $clog2(CYCLES_PER_SECOND) + 1;
+
+  logic [CounterWidth-1:0] pwm_count;
+
+  mod_n_counter #(
+      .N(CYCLES_PER_SECOND / 1000),
+      .WIDTH(CounterWidth)
+  ) u_pwm_count (
+      .clk(clk),
+      .rst('0),
+      .enable('1),
+      .count(pwm_count)
+  );
+
   logic pwm_out;
-
-  pwm_generator #(
-      .PERIOD_CYCLES(CYCLES_PER_SECOND / 1000),
-      .DUTY_CYCLES  ((CYCLES_PER_SECOND / 2000))
-  ) u_pwm_50 (
-      .clk(clk),
-      .rst('0),
-      .pwm_out(pwm_50)
-  );
-
-  pwm_generator #(
-      .PERIOD_CYCLES(CYCLES_PER_SECOND / 1000),
-      .DUTY_CYCLES  ((CYCLES_PER_SECOND / 4000))
-  ) u_pwm_25 (
-      .clk(clk),
-      .rst('0),
-      .pwm_out(pwm_25)
-  );
-
-  pwm_generator #(
-      .PERIOD_CYCLES(CYCLES_PER_SECOND / 1000),
-      .DUTY_CYCLES  ((CYCLES_PER_SECOND / 8000))
-  ) u_pwm_125 (
-      .clk(clk),
-      .rst('0),
-      .pwm_out(pwm_125)
-  );
-
   always_comb begin
     case (sw)
-      10'b0000000000: pwm_out = pwm_125;
-      10'b0100000000: pwm_out = pwm_25;
-      10'b1100000000: pwm_out = pwm_50;
-      10'b1000000000: pwm_out = '1;
-      default: pwm_out = '1;
+      10'b0000000000: pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 8000));
+      10'b0100000000: pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 4000));
+      10'b1100000000: pwm_out = (pwm_count >= CounterWidth'(CYCLES_PER_SECOND / 2000));
+      10'b1000000000: pwm_out = '0;
+      default: pwm_out = '0;
 
     endcase
   end
 
-  assign blank_hours   = in_blank_hours | ~pwm_out;
-  assign blank_minutes = in_blank_minutes | ~pwm_out;
-  assign blank_seconds = in_blank_seconds | ~pwm_out;
+  assign blank_hours   = in_blank_hours | pwm_out;
+  assign blank_minutes = in_blank_minutes | pwm_out;
+  assign blank_seconds = in_blank_seconds | pwm_out;
 
 endmodule

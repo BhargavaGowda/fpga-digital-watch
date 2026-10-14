@@ -62,7 +62,7 @@ module user_top_watch_v2 #(
   logic hours_dec;
   logic [4:0] hours;
   editable_counter #(
-      .N(60),
+      .N(24),
       .WIDTH(5)
   ) u_hours (
       .clk(clk),

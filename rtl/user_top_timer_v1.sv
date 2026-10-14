@@ -99,8 +99,10 @@ module user_top_timer_v1 #(
       .inc(hours_inc),
       .dec(hours_dec),
       .count(hours),
-      .clr(hours == '0)
+      .clr(hours == '0),
+      .borrow_out(_ignore)
   );
+  logic _ignore;
 
   // Accurate time keeping V4
 
